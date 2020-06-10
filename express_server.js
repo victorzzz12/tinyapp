@@ -5,11 +5,6 @@ const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const cookieParser = require('cookie-parser');
 
-
-function generateRandomString() {
-  return Math.random().toString(36).substring(2,8);
-}
-
 app.set("view engine", "ejs");
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -34,7 +29,11 @@ const users = {
   }
 };
 
-//looping through the keys
+const generateRandomString = () => {
+  return Math.random().toString(36).substring(2,8);
+}
+
+//looping through the keys to see if email exists
 const findUserByEmail = email => {
   for (let userId in users) {
     if (users[userId].email === email) {
@@ -42,7 +41,7 @@ const findUserByEmail = email => {
     }
   }
   return false;
-}
+};
 
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase, user: req.cookies["user"] };
@@ -110,14 +109,14 @@ app.post("/logout", (req, res) => { //logs out current user
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-
-  //check if user is not already in the database
   const user = findUserByEmail(email);
 
+  if (email === "" && password === "") {
+    res.status(400).send("The form cannot be empty")
+  }
+
   if (!user) {
-
     const userId = generateRandomString();
-
     const newUser = {
       id: userId,
       email,
@@ -131,8 +130,6 @@ app.post("/register", (req, res) => {
   } else {
     res.status(403).send("User is already registered");
   }
-
- 
 });
 
 app.listen(PORT, () => {
