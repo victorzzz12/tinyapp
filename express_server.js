@@ -43,6 +43,15 @@ const findUserByEmail = email => {
   return false;
 };
 
+const findUserByPassword = password => {
+  for (let userId in users) {
+    if (users[userId].password === password) {
+      return true;
+    }
+  }
+  return false;
+};
+
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase, user: req.cookies["user"] };
   res.render("urls_index", templateVars);
@@ -73,6 +82,11 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
+app.get("/login", (req, res) => {
+  let templateVars = { user: req.cookies["user"] }
+  res.render("login", templateVars);
+});
+
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body["longURL"];
@@ -95,10 +109,22 @@ app.post("/urls/:shortURL/edit", (req, res) => { //goes into the short url from 
 });
 
 app.post("/login", (req, res) => { //logins with given user
-  res.cookie("user", req.body.user);
-  res.redirect("/urls");
-  let templateVars = { user: req.cookies["user"] }
-  res.render("urls_index", templateVars);
+  const email = req.body.loginEmail;
+  const password = req.body.loginPassword;
+  const user = findUserByEmail(email);
+  const userPassword = findUserByPassword(password);
+
+  if (email === "" && password === "") {
+    res.status(400).send("The form cannot be empty. Please return to the previous login page.");
+  }
+  if (user && userPassword) {
+    res.cookie('user', email);
+    res.redirect("/urls");
+  } else {
+    res.send("Enter valid email and/or password. Please return to the previous login page.");
+    res.redirect("/login");
+  }
+  
 });
 
 app.post("/logout", (req, res) => { //logs out current user
@@ -112,7 +138,7 @@ app.post("/register", (req, res) => {
   const user = findUserByEmail(email);
 
   if (email === "" && password === "") {
-    res.status(400).send("The form cannot be empty")
+    res.status(400).send("The form cannot be empty. Please return to the previous registration page.");
   }
 
   if (!user) {
