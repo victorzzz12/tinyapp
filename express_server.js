@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser');
 
 
 function generateRandomString() {
-  return Math.floor((1 + Math.random()) * 0x1000000).toString(16).substring(1);
+  return Math.random().toString(36).substring(2,8);
 }
 
 app.set("view engine", "ejs");
@@ -21,20 +21,43 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+};
+
+//looping through the keys
+const findUserByEmail = email => {
+  for (let userId in users) {
+    if (users[userId].email === email) {
+      return true;
+    }
+  }
+  return false;
+}
+
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  let templateVars = { urls: urlDatabase, user: req.cookies["user"] };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { username: req.cookies["username"] }
+  let templateVars = { user: req.cookies["user"] }
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
-  let templateVars = { shortURL: shortURL, longURL: longURL, username: req.cookies["username"] };
+  let templateVars = { shortURL: shortURL, longURL: longURL, user: req.cookies["user"] };
   res.render("urls_show", templateVars);
 });
 
@@ -47,7 +70,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  let templateVars = { username: req.cookies["username"] }
+  let templateVars = { user: req.cookies["user"] }
   res.render("register", templateVars);
 });
 
@@ -72,17 +95,45 @@ app.post("/urls/:shortURL/edit", (req, res) => { //goes into the short url from 
   res.redirect(`/urls/${req.params.shortURL}`);
 });
 
-app.post("/login", (req, res) => { //logins with given username
-  res.cookie("username", req.body.username);
+app.post("/login", (req, res) => { //logins with given user
+  res.cookie("user", req.body.user);
   res.redirect("/urls");
-  let templateVars = { username: req.cookies["username"] }
+  let templateVars = { user: req.cookies["user"] }
   res.render("urls_index", templateVars);
 });
 
 app.post("/logout", (req, res) => { //logs out current user
-  (res.clearCookie('username', req.body.username));
+  (res.clearCookie('user', req.body.user));
   res.redirect("/urls");
 })
+
+app.post("/register", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  //check if user is not already in the database
+  const user = findUserByEmail(email);
+
+  if (!user) {
+
+    const userId = generateRandomString();
+
+    const newUser = {
+      id: userId,
+      email,
+      password
+    }
+
+    users[userId] = newUser;
+    res.cookie('user', users[userId]["email"]);
+    res.redirect("/urls");
+
+  } else {
+    res.status(403).send("User is already registered");
+  }
+
+ 
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
