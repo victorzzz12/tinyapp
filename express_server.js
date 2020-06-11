@@ -12,8 +12,8 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userId: "aJ48lW"},
+  "9sm5xK": { longURL:"http://www.google.com", userId: "aJ48lW"}
 };
 
 const users = { 
@@ -57,20 +57,26 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-app.get("/urls/new", (req, res) => {
-  let templateVars = { user: req.cookies["user"] }
-  res.render("urls_new", templateVars);
+app.get("/urls/new", (req, res) => {  
+  if (req.cookies["user"] === undefined) {
+    res.redirect("/login");
+  } else {
+    let templateVars = { user: req.cookies["user"] };
+    res.render("urls_new", templateVars);
+  }
+ 
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
-  let templateVars = { shortURL: shortURL, longURL: longURL, user: req.cookies["user"] };
+  const longURL = urlDatabase[shortURL]["longURL"];
+  let templateVars = { shortURL: shortURL, longURL: longURL, user: req.cookies["user"]};
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL]["longURL"];
   if (longURL === undefined) {
     res.send("404 Page Not Found");
   }
@@ -88,8 +94,10 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body["longURL"];
+  const shortURL = generateRandomString();
+  const user = req.cookies["user"];
+  urlDatabase[shortURL] = { longURL: req.body["longURL"], userId: user};
+  console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -100,11 +108,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = { longURL: req.body["longURL"]};
   res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL/edit", (req, res) => { //goes into the short url from the edit button
+  if (req.cookies["user"] === undefined) {
+    res.redirect("/login");
+  }
   res.redirect(`/urls/${req.params.shortURL}`);
 });
 
@@ -118,7 +129,7 @@ app.post("/login", (req, res) => { //logins with given user
     res.status(400).send("The form cannot be empty. Please return to the previous login page.");
   }
   if (user && userPassword) {
-    res.cookie('user', email);
+    res.cookie('user', email);  console.log(longURL);
     res.redirect("/urls");
   } else {
     res.send("Enter valid email and/or password. Please return to the previous login page.");
@@ -161,4 +172,5 @@ app.post("/register", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
 
