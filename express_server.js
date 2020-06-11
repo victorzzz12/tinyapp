@@ -50,9 +50,13 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL]["longURL"];
-  let templateVars = { shortURL: shortURL, longURL: longURL, user: req.session["user"]};
-  res.render("urls_show", templateVars);
+  if (urlDatabase[shortURL] === undefined) {
+    res.send("This is not a valid short URL ID. Please return to the previous page.")
+  } else {
+    const longURL = urlDatabase[shortURL]["longURL"];
+    let templateVars = { shortURL: shortURL, longURL: longURL, user: req.session["user"]};
+    res.render("urls_show", templateVars);
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
