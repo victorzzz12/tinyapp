@@ -52,9 +52,24 @@ const findUserByPassword = password => {
   return false;
 };
 
+function urlsForUser(id) {
+  let obj = {};
+  for (const i in urlDatabase) {
+    if (id === urlDatabase[i].userId) {
+      obj[i] = urlDatabase[i];
+    }
+  }
+  return obj;
+};
+
+
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase, user: req.cookies["user"] };
-  res.render("urls_index", templateVars);
+  let templateVars = { urls: urlsForUser(req.cookies["user"]), user: req.cookies["user"] };
+  if (req.cookies["user"] === undefined) {
+    res.render("newUserPage", templateVars);
+  } else {
+    res.render("urls_index", templateVars);
+  }
 });
 
 app.get("/urls/new", (req, res) => {  
@@ -101,21 +116,25 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect(`/urls`);
+  if (req.cookies["user"] === urlDatabase[req.params.shortURL]["userId"]) {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect(`/urls`);
+  }
+  res.send("Please login to delete\n")
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  let shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = { longURL: req.body["longURL"]};
+  const shortURL = req.params.shortURL;
+  const user = req.cookies["user"];
+  urlDatabase[shortURL] = { longURL: req.body["longURL"], userId: user};
   res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL/edit", (req, res) => { //goes into the short url from the edit button
-  if (req.cookies["user"] === undefined) {
-    res.redirect("/login");
+  if (req.cookies["user"] === urlDatabase[req.params.shortURL]["userId"]) {
+    res.redirect(`/urls/${req.params.shortURL}`);
   }
-  res.redirect(`/urls/${req.params.shortURL}`);
+  res.send("Please login to edit\n");
 });
 
 app.post("/login", (req, res) => { //logins with given user
@@ -128,7 +147,7 @@ app.post("/login", (req, res) => { //logins with given user
     res.status(400).send("The form cannot be empty. Please return to the previous login page.");
   }
   if (user && userPassword) {
-    res.cookie('user', email);  console.log(longURL);
+    res.cookie('user', email);
     res.redirect("/urls");
   } else {
     res.send("Enter valid email and/or password. Please return to the previous login page.");
