@@ -6,9 +6,9 @@ Users can also edit and delete items in their URL lists.
 
 ## Final Product
 
-!["Screenshot of URLs page"](https://github.com/lighthouse-labs/tinyapp/blob/master/docs/Homepage.png)
-!["Screenshot of URLs page"](https://github.com/lighthouse-labs/tinyapp/blob/master/docs/HomepageUser.png)
-!["Screenshot of URLs page"](https://github.com/lighthouse-labs/tinyapp/blob/master/docs/EditPage.png)
+!["Screenshot of URLs page"](https://github.com/victorzzz12/tinyapp/blob/master/docs/Homepage.png)
+!["Screenshot of URLs page"](https://github.com/victorzzz12/tinyapp/blob/master/docs/HomepageUser.png)
+!["Screenshot of URLs page"](https://github.com/victorzzz12/tinyapp/blob/master/docs/EditPage.png)
 
 ## Dependencies
 
