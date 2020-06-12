@@ -17,7 +17,7 @@ const { findUserForLogin } = require("./helperFunctions");
 const { findUserByEmail } = require("./helperFunctions");
 const { urlsForUser } = require("./helperFunctions");
 
-
+//initializing modules
 app.set("view engine", "ejs");
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -27,26 +27,27 @@ app.use(cookieSession({
   keys: ['f080ac7b-b838-4c5f-a1f4-b0a9fee10130', 'c3fb18be-448b-4f6e-a377-49373e9b7e1a']
 }));
 
-///GET requests
+///GET requests below
+
 app.get("/", (req, res) => {
   if (req.session["user"] === undefined) {
-    res.redirect("/login");
+    res.redirect("/login"); //Redirect to login page if not signed in
   } else {
-    res.redirect("/urls");
+    res.redirect("/urls"); //Redirect to personal url list if signed in
   }
 });
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlsForUser(req.session["user"]), user: req.session["user"] };
   if (req.session["user"] === undefined) {
-    res.render("newUserPage", templateVars);
+    res.render("newUserPage", templateVars); //Sends user to newUser page if not signed in
   } else {
-    res.render("urls_index", templateVars);
+    res.render("urls_index", templateVars); //Sends user to their personal URL list page
   }
 });
 
-app.get("/urls/new", (req, res) => {
+app.get("/urls/new", (req, res) => { //Opens to create new URL page
   if (req.session["user"] === undefined) {
-    res.redirect("/login");
+    res.redirect("/login"); //Redirects to login if there is no user signed in
   } else {
     let templateVars = { user: req.session["user"] };
     res.render("urls_new", templateVars);
@@ -61,20 +62,18 @@ app.get("/urls/:shortURL", (req, res) => {
     res.send("This is not a valid short URL ID. Please return to the previous page.");
 
   } else if (req.session["user"] === undefined) { //Sends user to login page if not logged
-    //in even though they have a correct short URL
-    res.redirect("/login");
+    res.redirect("/login");                       //in even though they have a correct short URL
 
   } else if (req.session["user"] !== urlDatabase[shortURL]["userId"]) {
     res.send("This is link is not registered on your account.");
 
   } else {
-    console.log(urlDatabase);
     let templateVars = { shortURL: shortURL, longURL: longURL, user: req.session["user"]};
-    res.render("urls_show", templateVars);
+    res.render("urls_show", templateVars); //Sends user to short URL page
   }
 });
 
-app.get("/u/:shortURL", (req, res) => {
+app.get("/u/:shortURL", (req, res) => { //redirects to the actual website coded into the short URL
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL]["longURL"];
   if (!longURL.includes("https://")) {
@@ -84,35 +83,36 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 
-app.get("/register", (req, res) => {
+app.get("/register", (req, res) => { //Opens to the register page
   let templateVars = { user: req.session["user"] };
   res.render("register", templateVars);
 });
 
-app.get("/login", (req, res) => {
+app.get("/login", (req, res) => { //Opens to the login page
   let templateVars = { user: req.session["user"] };
   res.render("login", templateVars);
 });
 
-//POST requests
+
+//POST requests below
 
 
-app.post("/urls", (req, res) => {
+app.post("/urls", (req, res) => { //Adds newly created short URL to the user homepage
   const shortURL = generateRandomString();
   const user = req.session["user"];
   urlDatabase[shortURL] = { longURL: req.body["longURL"], userId: user};
-  res.redirect(`/urls/${shortURL}`);
+  res.redirect(`/urls/${shortURL}`); //Redirects to newly created short URL page
 });
 
 
-app.post("/urls/:shortURL", (req, res) => {
+app.post("/urls/:shortURL", (req, res) => { //Updates the long URL of a short URL
   const shortURL = req.params.shortURL;
   const user = req.session["user"];
   urlDatabase[shortURL] = { longURL: req.body["longURL"], userId: user};
   res.redirect("/urls");
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.post("/urls/:shortURL/delete", (req, res) => { //deletes url link at the discretion of user
   if (req.session["user"] === urlDatabase[req.params.shortURL]["userId"]) {
     delete urlDatabase[req.params.shortURL];
     res.redirect(`/urls`);
@@ -152,7 +152,7 @@ app.post("/logout", (req, res) => { //logs out current user
   res.redirect("/urls");
 });
 
-app.post("/register", (req, res) => {
+app.post("/register", (req, res) => { //Registers new user based on inputs by user
   const email = req.body.email;
   const password = req.body.password;
   const user = findUserByEmail(email, users);
@@ -178,7 +178,7 @@ app.post("/register", (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, () => { //Shows that server is running on specified PORT without any problems
   console.log(`Example app listening on port ${PORT}!`);
 });
 
