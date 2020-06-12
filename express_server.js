@@ -28,7 +28,13 @@ app.use(cookieSession({
 }));
 
 ///GET requests
-
+app.get("/", (req, res) => {
+  if (req.session["user"] === undefined) {
+    res.redirect("/login");
+  } else {
+    res.redirect("/urls");
+  }
+});
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlsForUser(req.session["user"]), user: req.session["user"] };
   if (req.session["user"] === undefined) {
@@ -50,10 +56,19 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  if (urlDatabase[shortURL] === undefined) {
-    res.send("This is not a valid short URL ID. Please return to the previous page.")
+  const longURL = urlDatabase[shortURL]["longURL"];
+  if (urlDatabase[shortURL] === undefined) { //Sends error if the short URL id does not exist
+    res.send("This is not a valid short URL ID. Please return to the previous page.");
+
+  } else if (req.session["user"] === undefined) { //Sends user to login page if not logged 
+                                                  //in even though they have a correct short URL
+    res.redirect("/login");
+
+  } else if (req.session["user"] !== urlDatabase[shortURL]["userId"]) {
+    res.send("This is link is not registered on your account.");
+
   } else {
-    const longURL = urlDatabase[shortURL]["longURL"];
+    console.log(urlDatabase);
     let templateVars = { shortURL: shortURL, longURL: longURL, user: req.session["user"]};
     res.render("urls_show", templateVars);
   }
@@ -62,10 +77,11 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL]["longURL"];
-  if (longURL === undefined) {
-    res.send("404 Page Not Found");
+  if(!longURL.includes("https://")) {
+    res.redirect(`https://${longURL}`);
+  } else {
+    res.redirect(longURL);
   }
-  res.redirect(longURL);
 });
 
 app.get("/register", (req, res) => {
