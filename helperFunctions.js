@@ -1,5 +1,4 @@
 const { urlDatabase } = require("./userDatabase");
-const { users } = require("./userDatabase");
 const bcrypt = require("bcrypt");
 
 const generateRandomString = () => {
@@ -33,4 +32,4 @@ const urlsForUser = (id) => {
   return obj;
 };
 
-module.exports = {generateRandomString, findUserByEmail, findUserForLogin, urlsForUser}
+module.exports = {generateRandomString, findUserByEmail, findUserForLogin, urlsForUser};

@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 //imported objects
-const { urlDatabase }= require("./userDatabase");
+const { urlDatabase } = require("./userDatabase");
 const { users } = require("./userDatabase");
 //imported functions
 const { generateRandomString } = require("./helperFunctions");
@@ -44,7 +44,7 @@ app.get("/urls", (req, res) => {
   }
 });
 
-app.get("/urls/new", (req, res) => {  
+app.get("/urls/new", (req, res) => {
   if (req.session["user"] === undefined) {
     res.redirect("/login");
   } else {
@@ -60,8 +60,8 @@ app.get("/urls/:shortURL", (req, res) => {
   if (urlDatabase[shortURL] === undefined) { //Sends error if the short URL id does not exist
     res.send("This is not a valid short URL ID. Please return to the previous page.");
 
-  } else if (req.session["user"] === undefined) { //Sends user to login page if not logged 
-                                                  //in even though they have a correct short URL
+  } else if (req.session["user"] === undefined) { //Sends user to login page if not logged
+    //in even though they have a correct short URL
     res.redirect("/login");
 
   } else if (req.session["user"] !== urlDatabase[shortURL]["userId"]) {
@@ -77,7 +77,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL]["longURL"];
-  if(!longURL.includes("https://")) {
+  if (!longURL.includes("https://")) {
     res.redirect(`https://${longURL}`);
   } else {
     res.redirect(longURL);
@@ -85,12 +85,12 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  let templateVars = { user: req.session["user"] }
+  let templateVars = { user: req.session["user"] };
   res.render("register", templateVars);
 });
 
 app.get("/login", (req, res) => {
-  let templateVars = { user: req.session["user"] }
+  let templateVars = { user: req.session["user"] };
   res.render("login", templateVars);
 });
 
@@ -124,11 +124,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/urls/:shortURL/edit", (req, res) => { //goes into the short url from the edit button
   if (req.session["user"] === undefined) {
     res.redirect("/login");
-  }
-  else if (req.session["user"] === urlDatabase[req.params.shortURL]["userId"]) {
+  } else if (req.session["user"] === urlDatabase[req.params.shortURL]["userId"]) {
     res.redirect(`/urls/${req.params.shortURL}`);
-  }
-  else {
+  } else {
     res.send("Please login to edit\n");
   }
 });
@@ -152,7 +150,7 @@ app.post("/login", (req, res) => { //logins with given user
 app.post("/logout", (req, res) => { //logs out current user
   req.session["user"] = undefined;
   res.redirect("/urls");
-})
+});
 
 app.post("/register", (req, res) => {
   const email = req.body.email;
@@ -169,7 +167,7 @@ app.post("/register", (req, res) => {
       id: userId,
       email,
       password: bcrypt.hashSync(password, saltRounds)
-    }
+    };
 
     users[userId] = newUser;
     req.session['user'] = users[userId]["email"];
