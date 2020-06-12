@@ -1,11 +1,14 @@
 # TinyApp
 
-TinyApp is a full stack web application built with Node and Express that allows users to register an account and shorten long URLs (à la bit.ly) based on personal preferences.
+TinyApp is a full stack web application built with Node and Express that allows users to register an account and shorten long URLs (à la bit.ly).
+
+Users can also edit and delete items in their URL lists.
 
 ## Final Product
 
-!["screenshot description"](#)
-!["screenshot description"](#)
+!["Screenshot of URLs page"](https://github.com/lighthouse-labs/tinyapp/blob/master/docs/Homepage.png)
+!["Screenshot of URLs page"](https://github.com/lighthouse-labs/tinyapp/blob/master/docs/HomepageUser.png)
+!["Screenshot of URLs page"](https://github.com/lighthouse-labs/tinyapp/blob/master/docs/EditPage.png)
 
 ## Dependencies
 
